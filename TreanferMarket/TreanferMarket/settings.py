@@ -78,9 +78,9 @@ WSGI_APPLICATION = 'TreanferMarket.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-        'NAME': 'TransferMarketBD',
+        'HOST': 'HOST',
+        'PORT': 'PORT',
+        'NAME': 'NameBD',
         'USER': 'postgres',
         'PASSWORD': '1'
     }
