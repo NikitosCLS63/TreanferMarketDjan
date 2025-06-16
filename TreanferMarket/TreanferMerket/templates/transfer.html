@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_name %}Трансферный рынок{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Трансферный рынок</h2>
+
+    <section class="market-section">
+        <div class="market-layout">
+            <div class="filters">
+                <h3>Фильтры</h3>
+                
+                <div class="filter-group">
+                    <label for="search-player">Имя игрока:</label>
+                    <input type="text" id="search-player" placeholder="Найти игрока...">
+                </div>
+                <div class="filter-group">
+                    <label for="min-rating">Мин. рейтинг:</label>
+                    <input type="number" id="min-rating" min="0" max="99">
+                </div>
+                <div class="filter-group">
+                    <label for="position">Позиция:</label>
+                    <select id="position">
+                        <option value="">Любая</option>
+                       
+                    </select>
+                </div>
+                <button class="btn btn-primary full-width">Применить фильтры</button>
+            </div>
+
+            <div class="player-grid-container">
+                {% if listings %}
+                <div class="card-grid">
+                    {% for listing in listings %}
+                    <div class="player-card">
+                        <div class="card-header">
+                            <span class="player-rating">{{ listing.player.overall_rating }}</span>
+                            <span class="player-position">{{ listing.player.position.code }}</span>
+                            <img src="{% if listing.player.player_flag_image %}{{ listing.player.player_flag_image.url }}{% else %}{{ listing.player.nation.flag_image_url }}{% endif %}" alt="{{ listing.player.nation.name }} Flag" class="player-flag">
+                            <img src="{% if listing.player.player_club_logo_image %}{{ listing.player.player_club_logo_image.url }}{% else %}{{ listing.player.club.logo_url }}{% endif %}" alt="{{ listing.player.club.name }} Logo" class="player-club">
+                        </div>
+                        <img src="{% if listing.player.image_file %}{{ listing.player.image_file.url }}{% else %}{{ listing.player.image_url }}{% endif %}" alt="{{ listing.player.name }}" class="player-photo">
+                        <h3 class="player-name">{{ listing.player.name }}</h3>
+                        <div class="player-stats">
+                            <ul>
+                                <li><strong>{{ listing.player.stats.pace }}</strong> PAC</li>
+                                <li><strong>{{ listing.player.stats.shooting }}</strong> SHO</li>
+                                <li><strong>{{ listing.player.stats.passing }}</strong> PAS</li>
+                                <li><strong>{{ listing.player.stats.dribbling }}</strong> DRI</li>
+                                <li><strong>{{ listing.player.stats.defending }}</strong> DEF</li>
+                                <li><strong>{{ listing.player.stats.physicality }}</strong> PHY</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <span class="price">{{ listing.buy_now_price }}</span>
+                            <div class="purchase-info">
+                                <span class="purchase-count">Куплено: {{ listing.player.purchase_count }}</span>
+                                <form class="buy-player-form" data-listing-id="{{ listing.id }}" action="{% url 'buy_player' listing.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="button" class="btn btn-buy open-modal-btn">Купить</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>На трансферном рынке пока нет активных предложений.</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Placeholder для графика цен будет добавлен в новых обновлениях нно это не точно -->
+    <section class="price-graph-section">
+        <h3>График цен игрока (пример)</h3>
+        <canvas id="playerPriceChart"></canvas>
+        <p>График будет обновляться каждые 5 минут (при обновлении страницы).</p>
+    </section>
+
+    <!--  окно для подтверждения покупки  но это тоже опятьже не точно-->
+    <div id="purchaseConfirmModal" class="modal" style="display:none;" data-listing-id="">
+        <div class="modal-content">
+            <h4>Подтвердите покупку</h4>
+            <p>Вы уверены, что хотите купить этого игрока? Сделка будет закрыта через <span id="countdownTimer">30</span> секунд.</p>
+            <button class="btn btn-primary" id="confirmPurchaseBtn">Подтвердить</button>
+            <button class="btn btn-secondary" id="cancelPurchaseBtn">Отмена</button>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_body %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Script для  окна подтверждения покупки и таймера
+    const purchaseConfirmModal = document.getElementById('purchaseConfirmModal');
+    const countdownTimerSpan = document.getElementById('countdownTimer');
+    const confirmPurchaseBtn = document.getElementById('confirmPurchaseBtn');
+    const cancelPurchaseBtn = document.getElementById('cancelPurchaseBtn');
+    const openModalButtons = document.querySelectorAll('.open-modal-btn');
+    let countdownInterval;
+    let currentListingId;
+
+    openModalButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            const form = event.target.closest('form');
+            currentListingId = form.dataset.listingId;
+            purchaseConfirmModal.dataset.listingId = currentListingId;
+            purchaseConfirmModal.style.display = 'block';
+            startCountdown(30);
+        });
+    });
+
+    cancelPurchaseBtn.addEventListener('click', () => {
+        clearInterval(countdownInterval);
+        purchaseConfirmModal.style.display = 'none';
+    });
+
+    confirmPurchaseBtn.addEventListener('click', () => {
+        clearInterval(countdownInterval);
+        const formToSubmit = document.querySelector(`.buy-player-form[data-listing-id="${currentListingId}"]`);
+        if (formToSubmit) {
+            formToSubmit.submit();
+        } else {
+            console.error('Форма для отправки не найдена!');
+            purchaseConfirmModal.style.display = 'none';
+        }
+    });
+
+    function startCountdown(seconds) {
+        let timer = seconds;
+        countdownTimerSpan.textContent = timer;
+        countdownInterval = setInterval(() => {
+            timer--;
+            countdownTimerSpan.textContent = timer;
+            if (timer <= 0) {
+                clearInterval(countdownInterval);
+                purchaseConfirmModal.style.display = 'none';
+                alert('Время сделки истекло!');
+            }
+        }, 1000);
+    }
+
+    // Заглушка для Chart.js - график обновляется при перезагрузке страницы
+    const ctx = document.getElementById('playerPriceChart').getContext('2d');
+    const playerPriceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [], 
+            datasets: [{
+                label: 'Цена игрока',
+                data: [], 
+                borderColor: '#00ff87',
+                tension: 0.1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
+        }
+    });
+</script>
+{% endblock %} 

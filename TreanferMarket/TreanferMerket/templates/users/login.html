@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title_name %}Вход{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="form-container">
+        <h2>Вход</h2>
+        <form method="post">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="error">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {% if field.name == 'password' %}
+                        <div class="password-wrapper">
+                            {{ field.as_widget }}
+                            <span class="toggle-password" onclick="togglePassword(this)">🙂</span>
+                        </div>
+                    {% else %}
+                        {{ field.as_widget }}
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="error">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-secondary">Войти</button>
+            <a href="{% url 'info_view' %}" class="back-button">← Назад на главную</a>
+        </form>
+    </div>
+
+    <script>
+        function togglePassword(el) {
+            const input = el.previousElementSibling;
+            const type = input.getAttribute("type") === "password" ? "text" : "password";
+            input.setAttribute("type", type);
+            el.textContent = type === "password" ? "🙂" : "🫣";
+        }
+    </script>
+{% endblock %}
