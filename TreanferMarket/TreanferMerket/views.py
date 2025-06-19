@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView
+from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView, TemplateView, View
 from .models import (
     Nation, League, Club, Position, Player, PlayerStat,
     ListingStatus, TransferListing, BidStatus, Bid,
@@ -30,16 +30,22 @@ def info_view(request):
     return render(request, 'info.html')
 
 # Регистрация
-class UserRegisterView(CreateView):
-    model = CustomUser
-    form_class = CustomUserCreationForm
+class UserRegisterView(TemplateView):
     template_name = 'users/register.html'
-    success_url = reverse_lazy('login')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = CustomUserCreationForm()
+        return context
 
 # Вход
-class UserLoginView(LoginView):
-    authentication_form = CustomAuthenticationForm
+class UserLoginView(TemplateView):
     template_name = 'users/login.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = CustomAuthenticationForm()
+        return context
 
 # Выход
 class UserLogoutView(LogoutView):
@@ -66,8 +72,6 @@ class UserDeleteView(DeleteView):
     model = CustomUser
     template_name = 'users/user_confirm_delete.html'
     success_url = reverse_lazy('user_list')
-
-
 
 
 class NationListView(ListView):
@@ -180,7 +184,6 @@ class PositionDeleteView(DeleteView):
     template_name = 'position/position_confirm_delete.html'
     success_url = reverse_lazy('position_list_view')
 
-# ListingStatus CRUD
 class ListingStatusListView(ListView):
     model = ListingStatus
     template_name = 'listingstatus/listingstatus_list.html'
@@ -323,7 +326,6 @@ class TransactionTypeDeleteView(DeleteView):
     template_name = 'transactiontype/transactiontype_confirm_delete.html'
     success_url = reverse_lazy('transactiontype_list_view')
 
-# Transaction CRUD
 class TransactionListView(ListView):
     model = Transaction
     template_name = 'transaction/transaction_list.html'
@@ -347,117 +349,18 @@ class UserSquadCreateView(CreateView):
     template_name = 'usersquad/usersquad_form.html'
     success_url = reverse_lazy('usersquad_list_view')
 
-# SquadPosition CRUD
-class SquadPositionUpdateView(UpdateView):
-    model = SquadPosition
-    form_class = SquadPositionForm
-    template_name = 'squadposition/squadposition_form.html'
-    success_url = reverse_lazy('usersquad_list_view')
-
-# SBCDifficulty CRUD
-class SBCDifficultyListView(ListView):
-    model = SBCDifficulty
-    template_name = 'sbcdifficulty/sbcdifficulty_list.html'
-    context_object_name = 'difficulties'
-
-class SBCDifficultyCreateView(CreateView):
-    model = SBCDifficulty
-    form_class = SBCDifficultyForm
-    template_name = 'sbcdifficulty/sbcdifficulty_form.html'
-    success_url = reverse_lazy('sbcdifficulty_list_view')
-
-class SBCDifficultyUpdateView(UpdateView):
-    model = SBCDifficulty
-    form_class = SBCDifficultyForm
-    template_name = 'sbcdifficulty/sbcdifficulty_form.html'
-    success_url = reverse_lazy('sbcdifficulty_list_view')
-
-class SBCDifficultyDeleteView(DeleteView):
-    model = SBCDifficulty
-    template_name = 'sbcdifficulty/sbcdifficulty_confirm_delete.html'
-    success_url = reverse_lazy('sbcdifficulty_list_view')
-
-# SBC CRUD
-class SBCListView(ListView):
-    model = SBC
-    template_name = 'sbc/sbc_list.html'
-    context_object_name = 'sbcs'
-
-class SBCCreateView(CreateView):
-    model = SBC
-    form_class = SBCForm
-    template_name = 'sbc/sbc_form.html'
-    success_url = reverse_lazy('sbc_list_view')
-
-class SBCDetailView(DetailView):
-    model = SBC
-    template_name = 'sbc/sbc_detail.html'
-    context_object_name = 'sbc'
-
-# SBCReward CRUD
-class SBCRewardListView(ListView):
-    model = SBCReward
-    template_name = 'sbcreward/sbcreward_list.html'
-    context_object_name = 'rewards'
-
-class SBCRewardCreateView(CreateView):
-    model = SBCReward
-    form_class = SBCRewardForm
-    template_name = 'sbcreward/sbcreward_form.html'
-    success_url = reverse_lazy('sbcreward_list_view')
-
-class SBCRewardUpdateView(UpdateView):
-    model = SBCReward
-    form_class = SBCRewardForm
-    template_name = 'sbcreward/sbcreward_form.html'
-    success_url = reverse_lazy('sbcreward_list_view')
-
-class SBCRewardDeleteView(DeleteView):
-    model = SBCReward
-    template_name = 'sbcreward/sbcreward_confirm_delete.html'
-    success_url = reverse_lazy('sbcreward_list_view')
-
-# SBCRequirement CRUD
-class SBCRequirementListView(ListView):
-    model = SBCRequirement
-    template_name = 'sbcrequirement/sbcrequirement_list.html'
-    context_object_name = 'requirements'
-
-class SBCRequirementCreateView(CreateView):
-    model = SBCRequirement
-    form_class = SBCRequirementForm
-    template_name = 'sbcrequirement/sbcrequirement_form.html'
-    success_url = reverse_lazy('sbcrequirement_list_view')
-
-class SBCRequirementUpdateView(UpdateView):
-    model = SBCRequirement
-    form_class = SBCRequirementForm
-    template_name = 'sbcrequirement/sbcrequirement_form.html'
-    success_url = reverse_lazy('sbcrequirement_list_view')
-
-class SBCRequirementDeleteView(DeleteView):
-    model = SBCRequirement
-    template_name = 'sbcrequirement/sbcrequirement_confirm_delete.html'
-    success_url = reverse_lazy('sbcrequirement_list_view')
-    
-
 
 
 @login_required
 def create_player_card(request):
-    if request.method == 'POST':
-        form = PlayerCreationForm(request.POST, request.FILES, user=request.user)
-        if form.is_valid():
-            form.save()
-            return redirect('my_club')
-    else:
-        form = PlayerCreationForm(user=request.user)
+    # Обработка формы и отправка данных будет происходить через JavaScript на фронтенде.
+    form = PlayerCreationForm(user=request.user) # Форма для отображения пустых полей
     return render(request, 'create_player.html', {'form': form})
 
 @login_required
 def my_club(request):
-    created_players = Player.objects.filter(created_by=request.user)
-    owned_players = Player.objects.filter(owner=request.user)
+    created_players = Player.objects.filter(created_by=request.user).select_related('stats', 'position', 'nation', 'club')
+    owned_players = Player.objects.filter(owner=request.user).select_related('stats', 'position', 'nation', 'club')
 
     # Отладка: Проверка наличия статистики
     print("Created Players:")
@@ -476,7 +379,7 @@ def my_club(request):
         else:
             print("    Объект статистики не найден.")
 
-    return render(request, 'my_club.html', {'created_players': created_players, 'owned_players': owned_players})
+    return render(request, 'my_club.html', {'created_players': created_players, 'owned_players': owned_players, 'user_club_name': request.user.club_name})
 
 
 @login_required
@@ -514,19 +417,6 @@ def buy_player(request, listing_id):
     return render(request, 'confirm_purchase.html', {'listing': listing})
 
 
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            next_url = request.GET.get('next', 'info_view')
-            return redirect(next_url)
-        else:
-            messages.error(request, 'Неверное имя пользователя или пароль.')
-    return render(request, 'login.html')
-
 @login_required
 def transfer_market_view(request):
     active_status = ListingStatus.objects.get(name='Active')
@@ -534,7 +424,7 @@ def transfer_market_view(request):
 
     for listing in active_listings:
         time_since_last_update = timezone.now() - listing.last_price_update
-        if time_since_last_update.total_seconds() > 300:  # 300 секунд = 5 минут
+        if time_since_last_update.total_seconds() > 60:  
             new_price = random.randint(50000, 100000000)
             listing.buy_now_price = new_price
             listing.last_price_update = timezone.now()
@@ -544,17 +434,6 @@ def transfer_market_view(request):
 
 @login_required
 def sell_player(request, player_id):
-    player = get_object_or_404(Player, id=player_id, owner=request.user) # Убедимся, что игрок принадлежит пользователю
-    if request.method == 'POST':
-        form = SellPlayerForm(request.POST)
-        if form.is_valid():
-            listing = form.save(commit=False)
-            listing.player = player
-            listing.seller = request.user
-            listing.status = ListingStatus.objects.get(name='Active') # Устанавливаем статус Активно
-            listing.save()
-            messages.success(request, f'{player.name} успешно выставлен на трансферный рынок!')
-            return redirect('my_club') # Или на страницу рынка
-    else:
-        form = SellPlayerForm()
+    player = get_object_or_404(Player, id=player_id, owner=request.user)
+    form = SellPlayerForm() 
     return render(request, 'sell_player.html', {'form': form, 'player': player})

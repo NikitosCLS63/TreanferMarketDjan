@@ -28,15 +28,15 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "TreanferMerket/static")]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-Q_CLUSTER = {
-    'name': 'DjangoRedis',
-    'workers': 4,
-    'timeout': 90,
-    'retry': 120,
-    'queue_limit': 50,
-    'cached': True,
-    'orm': 'default'
-}
+# Q_CLUSTER = {
+#     'name': 'DjangoRedis',
+#     'workers': 4,
+#     'timeout': 90,
+#     'retry': 120,
+#     'queue_limit': 50,
+#     'cached': True,
+#     'orm': 'default'
+# }
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field 
@@ -49,8 +49,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'TreanferMerket',
-    'django_q',
-] 
+    
+    'rest_framework',
+    'rest_framework.authtoken',
+    'api_TreanferMarket',
+]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -66,15 +69,17 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'TreanferMerket',
-]
+# INSTALLED_APPS = [
+#     'django.contrib.admin',
+#     'django.contrib.auth',
+#     'django.contrib.contenttypes',
+#     'django.contrib.sessions',
+#     'django.contrib.messages',
+#     'django.contrib.staticfiles',
+#     'TreanferMerket',
+#     'api_TreanferMarket',
+#     'rest_framework'
+# ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -161,8 +166,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -172,4 +176,17 @@ LOGIN_URL = '/login/'
 
 LOGIN_REDIRECT_URL = 'my_club'
 
-AUTH_USER_MODEL = 'TreanferMerket.CustomUser' 
+AUTH_USER_MODEL = 'TreanferMerket.CustomUser'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    )
+} 

@@ -10,7 +10,7 @@
 {% block content %}
 <div class="container">
     <h2>Создать свою карту игрока</h2>
-    <form method="post" enctype="multipart/form-data" class="form">
+    <form id="createPlayerForm" method="post" enctype="multipart/form-data" class="form">
         {% csrf_token %}
         <div class="form-group">
             <label for="{{ form.name.id_for_label }}">Имя игрока:</label>
@@ -129,4 +129,73 @@
         <a href="{% url 'info_view' %}" class="btn btn-secondary">На главную</a>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const createPlayerForm = document.getElementById('createPlayerForm');
+
+        if (createPlayerForm) {
+            createPlayerForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); // Предотвращаем стандартную отправку формы
+
+                const formData = new FormData(createPlayerForm);
+                
+                // Для отладки: выведите содержимое FormData
+                // for (let [key, value] of formData.entries()) {
+                //     console.log(`${key}: ${value}`);
+                // }
+
+                try {
+                    const response = await fetch('/api/players/', {
+                        method: 'POST',
+                        // При использовании FormData, браузер сам устанавливает 'Content-Type': 'multipart/form-data',
+                        // поэтому не нужно устанавливать его вручную.
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken'), // Убедитесь, что эта функция существует
+                            'Authorization': `Token ${localStorage.getItem('token')}` // Добавляем токен для авторизации
+                        },
+                        body: formData,
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        alert('Игрок успешно создан!');
+                        // Можно перенаправить пользователя или обновить страницу
+                        window.location.href = '/my-club/'; 
+                    } else {
+                        // Обработка ошибок валидации API
+                        let errorMessage = 'Ошибка при создании игрока.';
+                        if (data) {
+                            errorMessage += '\n' + JSON.stringify(data, null, 2);
+                        }
+                        alert(errorMessage);
+                    }
+                } catch (error) {
+                    console.error('Ошибка сети или сервера:', error);
+                    alert('Произошла ошибка при отправке данных.');
+                }
+            });
+        }
+    });
+
+    // Функция для получения CSRF токена из куки
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
 {% endblock %}
