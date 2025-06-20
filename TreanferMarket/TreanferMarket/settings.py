@@ -119,7 +119,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'HOST': '',
         'PORT': '5432',
-        'NAME': '',
+        'NAME': '$TreanferMarketFC',
         'USER': '',
         'PASSWORD': ''
     }
