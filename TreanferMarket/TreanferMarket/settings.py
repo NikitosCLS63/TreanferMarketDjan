@@ -69,17 +69,17 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-# INSTALLED_APPS = [
-#     'django.contrib.admin',
-#     'django.contrib.auth',
-#     'django.contrib.contenttypes',
-#     'django.contrib.sessions',
-#     'django.contrib.messages',
-#     'django.contrib.staticfiles',
-#     'TreanferMerket',
-#     'api_TreanferMarket',
-#     'rest_framework'
-# ]
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'TreanferMerket',
+    'api_TreanferMarket',
+    'rest_framework'
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -116,12 +116,12 @@ WSGI_APPLICATION = 'TreanferMarket.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'HOST': '127.0.0.1',
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '',
         'PORT': '5432',
-        'NAME': 'TransferMarketBD',
-        'USER': 'postgres',
-        'PASSWORD': '1'
+        'NAME': '$TreanferMarket',
+        'USER': '',
+        'PASSWORD': ''
     }
 }
 
